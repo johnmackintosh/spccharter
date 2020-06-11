@@ -1,0 +1,21 @@
+Package: spccharter
+Title: Automatically Plot, Analyse and Revise Multiple Process Control Charts
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "John",
+           family = "MacKintosh",
+           role = c("aut", "cre"),
+           email = "johnmackintosh.jm@gmail.com")
+Description: Plots multiple run charts, finds successive signals of improvement, 
+    and revises centre line and control limits each time a signal is present.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
+Imports: 
+    data.table,
+    ggplot2,
+    lubridate,
+    zoo,
+    scales
