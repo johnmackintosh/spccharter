@@ -1,7 +1,7 @@
 basic_processing <- function(DT = NULL,
                              kg = keepgroup,
                              runlength = runlength,
-                             lookforward = lookforward,
+                             look_forward = look_forward,
                              ...) {
   lookback <- (runlength - 1)
   DT[,.y := .numerator / .denominator]
@@ -9,7 +9,7 @@ basic_processing <- function(DT = NULL,
   DT[flag != 0, rungroup := rleidv(flag), by = .grpvar
      ][flag != 0, cusum := cumsum(flag), by = list(.grpvar,rungroup)
        ][flag != 0, cusum_shift := shift(cusum,fill = cusum[.N], n = lookback, type = "lead"), by = .(.grpvar,rungroup)
-         ][flag != 0, roll_centre := zoo::rollapply(.y, width = lookforward,
+         ][flag != 0, roll_centre := zoo::rollapply(.y, width = look_forward,
                                                     FUN = mean,
                                                     partial = TRUE,
                                                     align = "right"),
@@ -39,7 +39,6 @@ get_run_dates <- function(direct = direction,
   }
 }
 
-
 get_runs_DT <- function(DT1 = NULL, #run_start
                         DT2 = NULL, # run_end
                         joinvar = ".grpvar",
@@ -47,9 +46,7 @@ get_runs_DT <- function(DT1 = NULL, #run_start
                         sdcols = c(".grpvar",".datecol","i..datecol","i.roll_centre"),
                         ... ){
   
-  runs <- DT1[DT2, on = joinvar, mult = "first"
-              ][,.SD
-                ][,.SD[1], by = joinvar]
+  runs <- DT1[DT2, on = joinvar, mult = "first"][,.SD, .SDcols = sdcols][,.SD[1], by = joinvar][]
   setnames(runs,
            old = c(".datecol","i..datecol","i.roll_centre"),
            new = c("start_date","end_date","centre"))
@@ -61,6 +58,7 @@ get_runs_DT <- function(DT1 = NULL, #run_start
 
 
 
+# first pass
 get_sustained <- function(DT1 = NULL,
                           DT2 = NULL, ...){
   
@@ -73,7 +71,23 @@ get_sustained <- function(DT1 = NULL,
 }
 
 
+#subsequent passes
+get_sustained2 <- function(DT1 = NULL,
+                           DT2 = NULL, ...){
+  
+  sus <- get_runs_DT(DT1, DT2)
+  sus <- sus[,c(".grpvar","centre","start_date","i.date"),]
+  setnames(sus,old = "i.date", new = "end_date")
+  sus[,`:=`(run_type = 'sustained',
+            rungroup = 1)][]
+  return(sus)
+  
+}
 
+
+
+
+#first pass
 update_tempDT <- function(DT1 = NULL, # sustained
                           DT2 = NULL, # masterDT
                           joinvar = '.grpvar'
@@ -82,6 +96,8 @@ update_tempDT <- function(DT1 = NULL, # sustained
   res
 }
 
+
+#subsequent passes
 update_tempDT2 <- function(DT1 = NULL, # sustained
                            DT2 = NULL, # masterDT
                            joinvar = '.grpvar'
@@ -92,9 +108,9 @@ update_tempDT2 <- function(DT1 = NULL, # sustained
 
 
 get_process_centres <- function(DT,
-                                look_forward,
-                                numerator,
-                                denominator,
+                                look_forward = look_forward,
+                                .numerator,
+                                .denominator,
                                 round_digits,
                                 .grpvar,
                                 plot_type,
@@ -105,20 +121,13 @@ get_process_centres <- function(DT,
   
   
   if (plot_type == "c") {
-    temp_pc_rows[,centre := mean(get(numerator),na.rm = TRUE), by = .grpvar]
+    temp_pc_rows[,centre := mean(.numerator, na.rm = TRUE), by = .grpvar]
   } else {
     
-    temp_pc_rows[,centre := mean(get(numerator) / get(denominator), na.rm = TRUE), by = .grpvar][]
+    temp_pc_rows[, centre := mean(.numerator / .denominator, na.rm = TRUE), by = .grpvar][]
     temp_pc_rows[, centre := round(centre,round_digits + 1), by = .grpvar][]
     
   }
-  
- 
-  
-  #calculate standard deviation
-  
-  
-  
   if (plot_type == "c") {
     
     temp_pc_rows[,std_dev := sqrt(centre), by = .grpvar]
@@ -152,9 +161,5 @@ get_process_centres <- function(DT,
   
 }
 
-
-scale_formatter <- function(x,m){
-  x*m
-}
 
 

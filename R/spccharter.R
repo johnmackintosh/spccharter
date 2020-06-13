@@ -16,10 +16,10 @@
 #' @param datecol name of date column
 #' @param grpvar character vector of grouping variable
 #' @param plot_type 'c', 'p' or 'u' chart
-#' @param initial_rows number of points to calculate initial baseline median
-#' @param lookforward number of rows to rebase limits on, including those in the sustained run
+#' @param initial_rows number of points to calculate initial baseline mean
+#' @param look_forward number of rows to rebase limits on, including those in the sustained run
 #' @param runlength length of desired run. Less than 8 may not be statisticall significant
-#' @param direction should run occur "above", "below" or on "both" sides of median
+#' @param direction should run occur "above", "below" or on "both" sides of the mean line
 
 
 #' @param round_digits the number of decimal places to round the p / u values and limits to
@@ -32,24 +32,25 @@
 #' @param chart_subtitle subtitle for chart
 #' @param chart_caption caption for chart
 #' @param chart_breaks character string defining desired x-axis date breaks
-#' @param line_colr colour for runchart lines
+#' @param line_colr colour for basic chart lines
 #' @param line_size thickness of connecting lines between run chart points
-#' @param point_colr colour for runchart points
+#' @param point_colr colour for basic chart points
 #' @param point_size size of normal run chart points
-#' @param median_colr colour for solid and extended median lines
-#' @param median_line_size thickness of solid and extended median lines
+#' @param centre_colr colour for solid and extended mean  lines
+#' @param centre_line_size thickness of solid and extended mean  lines
 #' @param highlight_fill fill colour for highlighting points in a sustained run
 #' @param cl_fill geom_ribbon fill for upper  and lower control limits
 #' @param wl_fill geom_ribbon fill for upper  and lower warning limits
 #'
-#' @param overwrite_theme set to TRUE if you want to amend the final plot
-#' afterwards, in which case it eturns the default ggplot2 theme, gridlines
-#' and date labels. Leave at FALSE for theme_minimal, no gridlines and rotated
+#' @param overwrite_theme set to FALSE if you want to amend the final plot
+#' afterwards, in which case it returns the default ggplot2 theme, gridlines
+#' and date labels. Leave at TRUE for theme_minimal, no gridlines and rotated
 #' date labels.
 #'
 #' @param ...  further arguments passed on to function
 #'
-#' @return data.table of all runs, by group, that meet the criteria
+#' @return (faceted) plot plus detailed data.tables showing improvement data.
+#' These outputs can be used for further processing in external tools
 #'
 #' @import data.table
 #' @importFrom stats median
@@ -64,34 +65,34 @@
 #'
 #'
 spccharter <- function(df,
-                       numerator,
-                       denominator = NULL,
-                       datecol = NULL,
-                       grpvar = NULL,
-                       plot_type = c("c","p","u"),
-                       runlength = 8,
-                       initial_rows = 25,
-                       lookforward = 25,
-                       direction = c("above","below","both"),
-                       round_digits = 2,
-                       multiplier = c(100,1000,10000),
-                       facet_cols = NULL,
-                       facet_scales = "fixed",
-                       chart_title = NULL,
-                       chart_subtitle = NULL,
-                       chart_caption = NULL,
-                       chart_breaks = NULL,
-                       line_colr =  "#005EB8",
-                       line_size = 1.1,
-                       point_colr = "#005EB8",
-                       point_size = 2.7,
-                       median_colr = "#06425AFF",
-                       median_line_size = 1.05,
-                       highlight_fill = "#B50A2AFF", #"#E48C2AFF", #"#DB1884",
-                       cl_fill = "white", #"#67B9E9FF", #"#86C2DAFF",
-                       wl_fill = "white", #"#B7D9F2FF", #"#C0DDE1FF",
-                       overwrite_theme = FALSE,
-                       ...) {
+                numerator,
+                denominator = NULL,
+                datecol = NULL,
+                grpvar = NULL,
+                plot_type = c("c","p","u"),
+                runlength = 8,
+                initial_rows = 25,
+                look_forward = 25,
+                direction = c("above","below","both"),
+                round_digits = 2,
+                multiplier = c(100,1000,10000),
+                facet_cols = NULL,
+                facet_scales = "fixed",
+                chart_title = NULL,
+                chart_subtitle = NULL,
+                chart_caption = NULL,
+                chart_breaks = NULL,
+                line_colr =  "#005EB8",
+                line_size = 1.1,
+                point_colr = "#005EB8",
+                point_size = 2.7,
+                centre_colr = "#06425AFF",
+                centre_line_size = 1.05,
+                highlight_fill = "#B50A2AFF", #"#E48C2AFF", #"#DB1884",
+                cl_fill = "grey80", #"#67B9E9FF", #"#86C2DAFF",
+                wl_fill = "grey90", #"#B7D9F2FF", #"#C0DDE1FF",
+                overwrite_theme = TRUE,
+                ...) {
   
   # initialise some variables
   
@@ -101,7 +102,7 @@ spccharter <- function(df,
   .y <- flag <- rungroup <- ucl <- uwl <- lwl <- lcl <-  NULL
   med_lookup <- .extended <- cols_to_round <- extend_to <- extend_to2 <-  NULL
   
-  sdcols <- NULL
+ # sdcols <- NULL
   
   
   flag_reset <- if (direction == "below") {
@@ -163,7 +164,6 @@ spccharter <- function(df,
   data.table::setkeyv(masterDT, keycols)
   
   masterDT <- masterDT[!is.na(.datecol),]
-  masterDT <- masterDT[!is.na(.numerator),]
   
   keepgroup <- masterDT[,.N, by = .grpvar]
   
@@ -177,7 +177,7 @@ spccharter <- function(df,
   
   if (all(keeptest[["result"]] == FALSE)) {
     stop("None of the groups have enough rows of data beyond the specified baseline period, for the desired runlength.
-        Please check the values of the med_rows and runlength arguments.
+        Please check the values of the initial_rows and runlength arguments.
         Currently they exceed the number of rows for each group")
   } else {
     keepgroup <-  masterDT[,.N, by = .grpvar,
@@ -187,7 +187,7 @@ spccharter <- function(df,
   
   if (length(keepgroup) == 0) {
     stop("None of the groups have enough rows of data beyond the specified baseline period, for the desired runlength.
-        Please check the values of the med_rows and runlength arguments.
+        Please check the values of the initial_rows and runlength arguments.
         Currently they exceed the number of rows for each group")
   }
   
@@ -234,24 +234,23 @@ spccharter <- function(df,
                             end_date = max(.datecol,na.rm = TRUE)), by = .grpvar]
   
   centres <- centres <- process_centre_rows[,`:=`(run_type = "baseline", rungroup = 1)]
-  #centres <- process_centre_rows[,utils::head(.SD,1), by = .grpvar
-  # ][,`:=`(run_type = "baseline", rungroup = 1)]
+  
   
   med_lookup <- centres[,c(".grpvar","centre","end_date")]
   
   
-  # current tempDT <- med_lookup[masterDT, on = .(.grpvar)][.datecol > end_date,][]
+  
   tempDT <- med_lookup[masterDT, on = .(.grpvar), mult = 'first'][.datecol > end_date,.SD, by = .grpvar][]
   
-  # orig tempDT <- masterDT[med_lookup, on = .(.grpvar, .datecol > end_date)][]
+  
   
   
   tempDT <- tempDT[,end_date := NULL][]
   
   
   
-  # function begins from here
-  tempDT <- basic_processing(DT = tempDT, kg = keepgroup,runlength, lookforward)
+  # first time processing
+  tempDT <- basic_processing(DT = tempDT, kg = keepgroup,runlength, look_forward)
   tempDT[,roll_centre := round(roll_centre,round_digits + 2)][]
   run_start <- get_run_dates(direction,DT = tempDT, target_vec = "cusum_shift",
                              compar_vec = flag_reset, runlength)
@@ -263,13 +262,19 @@ spccharter <- function(df,
                              compar_vec = flag_reset, runlength)
     sustained <- get_sustained(DT1 = run_start,
                                DT2 = run_end)
+    
     tempDT <- update_tempDT(sustained,masterDT)
+    #tempDT <- update_tempDT(sustained,tempDT)
     
     
-    temp_centres <- get_process_centres(tempDT, lookforward, numerator,
+    temp_centres <- get_process_centres(tempDT, look_forward, numerator,
                                         denominator, round_digits,
                                         .grpvar = .grpvar,
                                         plot_type = plot_type)
+    
+    tmpctrs <- temp_centres[,unique(.SD),.SDcols = c(".grpvar","centre")]
+    sustained[, centre := NULL]
+    sustained <- tmpctrs[sustained, on = ".grpvar"]
     
     bindlist <- if (!exists("bindlist")) {
       bindlist <- list(centres, temp_centres)
@@ -279,12 +284,13 @@ spccharter <- function(df,
     
     centres <- data.table::rbindlist(bindlist, use.names = TRUE, fill = TRUE)
     
-    med_lookup <-  centres[,c(".grpvar","centre","end_date")]#[end_date == max(end_date),.SD,.grpvar]
+    # med_lookup <-  centres[,c(".grpvar","centre","end_date")]
+    med_lookup <-  sustained[,c(".grpvar","centre","end_date")]
     
     tempDT <- med_lookup[masterDT, on = .(.grpvar),mult = 'last'][.datecol > end_date,][]
     
+    tempDT <- tempDT[,end_date := NULL][]
     
-    #tempDT <- update_tempDT2(sustained,masterDT)
     
     keepgroup <- tempDT[,.N,.(.grpvar)
                         ][N >= (runlength),.SD,.SDcols = "N",by = list(.grpvar)
@@ -293,93 +299,111 @@ spccharter <- function(df,
     # if keepgroup > 0 , repeat, else
     
     while (length(keepgroup)) {
-      tempDT <- basic_processing(DT = tempDT, kg = keepgroup, runlength, lookforward)
+      tempDT <- basic_processing(DT = tempDT, kg = keepgroup, runlength, look_forward)
       run_start <- get_run_dates(direction, DT = tempDT, target_vec = "cusum_shift",
                                  compar_vec = flag_reset, runlength)
       keepgroup <- run_start[,.N,.(.grpvar)][,unique(.grpvar)]
+      
       run_end <- get_run_dates(direction,DT = tempDT, target_vec = "cusum",
                                compar_vec = flag_reset, runlength)
-      sustained <- get_sustained(DT1 = run_start, DT2 = run_end)
+      
+      sustained <- get_runs_DT(DT1 = run_start, DT2 = run_end)
+      sustained[,`:=`(run_type = 'sustained',rungroup = 1)][]
       tempDT <- update_tempDT(sustained,masterDT)
       
       if (!length(keepgroup)) {break}
-      temp_centres <- get_process_centres(tempDT, lookforward, numerator,
+      temp_centres <- get_process_centres(tempDT, look_forward, numerator,
                                           denominator, round_digits,
                                           .grpvar = .grpvar,
                                           plot_type = plot_type)
+      tmpctrs <- temp_centres[,unique(.SD),.SDcols = c(".grpvar","centre")]
+      sustained[,centre := NULL]
+      sustained <- tmpctrs[sustained, on = ".grpvar"]
       
       bindlist <- list(centres,temp_centres)
       centres <- data.table::rbindlist(bindlist, use.names = TRUE, fill = TRUE)
-      #tempDT <- update_tempDT2(sustained,masterDT)
-      med_lookup <-  centres[,c(".grpvar","centre","end_date")]#[end_date == max(end_date),.SD,.grpvar]
+      
+      #med_lookup <-  centres[,c(".grpvar","centre","end_date")]
+      med_lookup <-  sustained[,c(".grpvar","centre","end_date")]
       
       
       tempDT <- med_lookup[masterDT, on = .(.grpvar),mult = 'last'][.datecol > end_date,][]
+      tempDT <- tempDT[,end_date := NULL][]
     }
     
   }
-  # modify the final medians DT for plotting purposes
+  # modify the final results tables for plotting purposes
   
   centres[,extend_to := shift(start_date,type = "lead"), by = .grpvar]
   centres[,extend_to := ifelse(is.na(extend_to),
                                max(masterDT[[".datecol"]]),extend_to), by = .grpvar]
   centre_rows <- centres[!is.na(end_date) & run_type == "baseline",]
   
-  sustained_rows <- centres[!is.na(end_date) & run_type == "sustained",]
+  sustained_rows <- centres[!is.na(end_date) & run_type == "sustained",][]
+  
+  sustained_rows <- setDT(sustained_rows)[ ,.SD[which.max(start_date)],by = c(".datecol",".grpvar")][]
+  
   sustained_rows <- sustained_rows[order(.grpvar,start_date)
                                    ][,rungroup := NULL
-                                     ][,rungroup := .GRP, by = list(.grpvar,start_date)]
+                                     ][,rungroup := .GRP, by = list(.grpvar,start_date)][]
+  
+  
+  centres[order(.datecol),rungroup := .GRP, by = list(.grpvar, .datecol, start_date)][]
+  #centres <- centres[,.SD[which.max(rungroup)],by = c(".datecol",".grpvar")][]
+  centres <- centres[centres[, .I[start_date == max(start_date)], by = c(".datecol",".grpvar")]$V1]
   
   
   highlights <-  sustained_rows[, utils::head(.SD, runlength),  by = c('.grpvar','rungroup')]
   
+  
+  # now we need to extend from the last improvement to the end of the data
+  
   med_lookup <-  centres[,c(".grpvar","centre","end_date")]
+  
   .extended <- med_lookup[masterDT, on = .(.grpvar),mult = 'last'][.datecol > end_date,][]
   
-  #.extended [,centre := round(mean(get(numerator) / get(denominator), na.rm = TRUE),round_digits + 2), by = .grpvar][]
-  
-  
-  #calculate standard deviation
-  
-  
-  
-  if (plot_type == "c") {
+  if (dim(.extended)[1] > 0) {
     
-    .extended[,std_dev := sqrt(centre), by = .grpvar]
+    #calculate standard deviation
     
-  } else if (plot_type == 'p') {
     
-    .extended[,std_dev := sqrt(centre * (1 - centre) / .denominator) , by = .grpvar
-              ][,std_dev := round(std_dev, round_digits + 1)][]
+    if (plot_type == "c") {
+      
+      .extended[,std_dev := sqrt(centre), by = .grpvar]
+      
+    } else if (plot_type == 'p') {
+      
+      .extended[,std_dev := sqrt(centre * (1 - centre) / .denominator) , by = .grpvar
+                ][,std_dev := round(std_dev, round_digits + 1)][]
+      
+    } else {
+      
+      .extended[,std_dev := sqrt(centre  /  .denominator), by = .grpvar
+                ][,std_dev := round(std_dev, round_digits + 1)][]
+    }
     
-  } else {
     
-    .extended[,std_dev := sqrt(centre  /  .denominator), by = .grpvar
-              ][,std_dev := round(std_dev, round_digits + 1)][]
+    .extended[,`:=`(ucl = round(centre + 3 * std_dev,round_digits + 1),
+                    uwl = round(centre + 2 * std_dev,round_digits + 1),
+                    lwl = round(centre - 2 * std_dev,round_digits + 1),
+                    lcl = round(centre - 3 * std_dev,round_digits + 1))][]
+    
+    .extended[,lcl := data.table::fifelse(lcl < 0, 0, lcl)]
+    .extended[,lwl := data.table::fifelse(lwl < 0, 0, lwl)]
+    
+    .extended[,`:=`(start_date = min(.datecol, na.rm = TRUE),
+                    end_date = max(.datecol,na.rm = TRUE)), by = .grpvar]
+    
+    .extended[,`:=`(run_type = "extended", rungroup = 1L), by = .grpvar]
+    
+    .extended[,`:=`(extend_to = end_date), by = .grpvar]
+    
+    bindlist <- list(centres,.extended)
+    centres <- data.table::rbindlist(bindlist, use.names = TRUE, fill = TRUE)
+    
   }
   
-  
-  .extended[,`:=`(ucl = round(centre + 3 * std_dev,round_digits + 1),
-                  uwl = round(centre + 2 * std_dev,round_digits + 1),
-                  lwl = round(centre - 2 * std_dev,round_digits + 1),
-                  lcl = round(centre - 3 * std_dev,round_digits + 1))][]
-  
-  .extended[,lcl := data.table::fifelse(lcl < 0, 0, lcl)]
-  .extended[,lwl := data.table::fifelse(lwl < 0, 0, lwl)]
-  
-  .extended[,`:=`(start_date = min(.datecol, na.rm = TRUE),
-                  end_date = max(.datecol,na.rm = TRUE)), by = .grpvar]
-  
-  .extended[,`:=`(run_type = "extended", rungroup = 1L), by = .grpvar]
-  #.extended[,`:=`(extend_to = end_date, rungroup = 1), by = .grpvar]
-  .extended[,`:=`(extend_to = end_date), by = .grpvar]
-  
-  bindlist <- list(centres,.extended)
-  centres <- data.table::rbindlist(bindlist, use.names = TRUE, fill = TRUE)
-  
   data.table::setkey(sustained_rows,.grpvar,start_date,end_date)
-  
-  
   
   
   if (factorcheck) {
@@ -388,7 +412,6 @@ spccharter <- function(df,
     sustained_rows[,.grpvar := factor(.grpvar,levels = keeplevels,ordered = TRUE)]
     highlights[,.grpvar := factor(.grpvar,levels = keeplevels,ordered = TRUE)]
   }
-  
   
   
   
@@ -413,54 +436,43 @@ spccharter <- function(df,
   
   
   
-  # control limits
+  # control limits with geom ribbon
   
   spcchart <- spcchart +
     ggplot2::geom_ribbon(data = centres,
                          aes(x = .datecol, ymin = lcl, ymax = ucl),
-                         fill = cl_fill, colour =  median_colr, size = median_line_size)
+                         fill = cl_fill, colour =  centre_colr, size = centre_line_size)
   
   spcchart <- spcchart  +
     ggplot2::geom_ribbon(data = centres,
                          aes(x = .datecol, ymin = lwl, ymax = uwl),
-                         fill = wl_fill, colour =  median_colr, size = median_line_size)
-  
-  
-  # extend it
-  
-  # spcchart <- spcchart +
-  #   ggplot2::geom_ribbon(data = .extended,
-  #               aes(x = .datecol, ymin = lcl, ymax = ucl),
-  #               fill = cl_fill, colour =  median_colr)
-  #
-  # spcchart <- spcchart  +
-  #   ggplot2::geom_ribbon(data = .extended,
-  #               aes(x = .datecol, ymin = lwl, ymax = uwl),
-  #                fill = wl_fill, colour =  median_colr)
+                         fill = wl_fill)
   
   
   
   spcchart <- spcchart +
     ggplot2::geom_ribbon(data = centre_rows,
                          aes(x = .datecol, ymin = lcl, ymax = ucl),
-                         fill = cl_fill, colour =  median_colr, size = median_line_size)
+                         fill = cl_fill, colour =  centre_colr, size = centre_line_size)
   
   spcchart <- spcchart  +
     ggplot2::geom_ribbon(data = centre_rows,
                          aes(x = .datecol, ymin = lwl, ymax = uwl),
-                         fill = wl_fill, colour =  median_colr, size = median_line_size)
+                         fill = wl_fill)
+  #colour =  centre_colr, size = centre_line_size)
   
   
   if (dim(sustained_rows)[1] > 0L) {
     spcchart <- spcchart +
       ggplot2::geom_ribbon(data = sustained_rows,
                            aes(x = .datecol, ymin = lcl, ymax = ucl),
-                           fill = cl_fill, colour =  median_colr, size = median_line_size)
+                           fill = cl_fill, colour =  centre_colr, size = centre_line_size)
     
     spcchart <- spcchart  +
       ggplot2::geom_ribbon(data = sustained_rows,
                            aes(x = .datecol, ymin = lwl, ymax = uwl),
-                           fill = wl_fill, colour =  median_colr, size = median_line_size)
+                           fill = wl_fill)
+    #, colour =  centre_colr, size = centre_line_size)
   }
   
   
@@ -469,8 +481,8 @@ spccharter <- function(df,
     ggplot2::geom_point(shape = 21 ,colour = point_colr,
                         fill = point_colr, size = point_size)
   
-  #  plot theme elements unless user wants to over-write later
-  if (!overwrite_theme) {
+  #  amend plot theme elements unless user wants to over-write later
+  if (overwrite_theme) {
     spcchart <- spcchart +
       ggplot2::theme_minimal(base_size = 10) +
       ggplot2::theme(axis.text.y = ggplot2::element_text(angle = 0)) +
@@ -481,6 +493,7 @@ spccharter <- function(df,
   }
   
   
+  # some facets do not require lines printing due  to limited data
   
   # lines only
   spcchart <- spcchart +
@@ -491,16 +504,16 @@ spccharter <- function(df,
                    y = .numerator / .denominator,
                    group = {{grpvar}}),
       colour = line_colr,
-      size = median_line_size
+      size = centre_line_size
     )
   
-  # solid original median line
+  # solid original mean  line
   
   spcchart <- spcchart +
     ggplot2::geom_segment(data = centre_rows,na.rm = TRUE,
                           ggplot2::aes(x = start_date, xend = end_date,
                                        y = centre, yend = centre, group = rungroup),
-                          colour = median_colr,size = median_line_size, linetype = 1)
+                          colour = centre_colr,size = centre_line_size, linetype = 1)
   
   
   #  highlight sustained points
@@ -514,14 +527,14 @@ spccharter <- function(df,
                           size = point_size)
   }
   
-  # sustained median lines
+  # sustained mean  lines
   if (dim(sustained_rows)[1] > 0L) {
     spcchart <- spcchart +
       ggplot2::geom_segment(data = sustained_rows, na.rm = TRUE,
                             ggplot2::aes(x = start_date, xend = end_date,
                                          y = centre, yend = centre,
-                                         group = rungroup), colour = median_colr,
-                            linetype = 1, size =  median_line_size)
+                                         group = rungroup), colour = centre_colr,
+                            linetype = 1, size =  centre_line_size)
     
   }
   
@@ -539,7 +552,7 @@ spccharter <- function(df,
                                        y = centre,
                                        yend = centre,
                                        group = rungroup),
-                          colour = median_colr,
+                          colour = centre_colr,
                           linetype = 2,
                           size = 1.05)
   
@@ -585,9 +598,10 @@ spccharter <- function(df,
     }
   }
   
-  
-  for (j in cols_to_round) {
-    set(remaining, i = NULL, j = j, value = round(remaining[[j]],round_digits))
+  if (dim(remaining)[1] > 0L) {
+    for (j in cols_to_round) {
+      set(remaining, i = NULL, j = j, value = round(remaining[[j]],round_digits))
+    }
   }
   
   
@@ -595,12 +609,14 @@ spccharter <- function(df,
   
   if (dim(sustained_rows)[1] > 0L) {
     results <- list( spcchart = spcchart,
+                    # centres = centres,
                      centre_rows = return_centre,
                      sustained = return_sustained,
                      remaining = remaining)
   } else {
     
     results <- list( spcchart = spcchart,
+                     #centres = centres,
                      centre_rows = return_centre,
                      remaining = remaining)
   }

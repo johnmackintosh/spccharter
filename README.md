@@ -41,6 +41,6 @@ To follow:
 
 ``` r
 library(spccharter)
-spccharter(ons_mortality, numerator = counts, datecol = date, 
+spccharter(data, numerator = counts, datecol = date, 
            grpvar = category_1, plot_type = 'c', direction = "both")
 ```

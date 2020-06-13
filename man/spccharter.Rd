@@ -13,7 +13,7 @@ spccharter(
   plot_type = c("c", "p", "u"),
   runlength = 8,
   initial_rows = 25,
-  lookforward = 25,
+  look_forward = 25,
   direction = c("above", "below", "both"),
   round_digits = 2,
   multiplier = c(100, 1000, 10000),
@@ -27,12 +27,12 @@ spccharter(
   line_size = 1.1,
   point_colr = "#005EB8",
   point_size = 2.7,
-  median_colr = "#06425AFF",
-  median_line_size = 1.05,
+  centre_colr = "#06425AFF",
+  centre_line_size = 1.05,
   highlight_fill = "#B50A2AFF",
-  cl_fill = "white",
-  wl_fill = "white",
-  overwrite_theme = FALSE,
+  cl_fill = "grey80",
+  wl_fill = "grey90",
+  overwrite_theme = TRUE,
   ...
 )
 }
@@ -51,11 +51,11 @@ spccharter(
 
 \item{runlength}{length of desired run. Less than 8 may not be statisticall significant}
 
-\item{initial_rows}{number of points to calculate initial baseline median}
+\item{initial_rows}{number of points to calculate initial baseline mean}
 
-\item{lookforward}{number of rows to rebase limits on, including those in the sustained run}
+\item{look_forward}{number of rows to rebase limits on, including those in the sustained run}
 
-\item{direction}{should run occur "above", "below" or on "both" sides of median}
+\item{direction}{should run occur "above", "below" or on "both" sides of the mean line}
 
 \item{round_digits}{the number of decimal places to round the p / u values and limits to}
 
@@ -73,17 +73,17 @@ spccharter(
 
 \item{chart_breaks}{character string defining desired x-axis date breaks}
 
-\item{line_colr}{colour for runchart lines}
+\item{line_colr}{colour for basic chart lines}
 
 \item{line_size}{thickness of connecting lines between run chart points}
 
-\item{point_colr}{colour for runchart points}
+\item{point_colr}{colour for basic chart points}
 
 \item{point_size}{size of normal run chart points}
 
-\item{median_colr}{colour for solid and extended median lines}
+\item{centre_colr}{colour for solid and extended mean  lines}
 
-\item{median_line_size}{thickness of solid and extended median lines}
+\item{centre_line_size}{thickness of solid and extended mean  lines}
 
 \item{highlight_fill}{fill colour for highlighting points in a sustained run}
 
@@ -91,15 +91,16 @@ spccharter(
 
 \item{wl_fill}{geom_ribbon fill for upper  and lower warning limits}
 
-\item{overwrite_theme}{set to TRUE if you want to amend the final plot
-afterwards, in which case it eturns the default ggplot2 theme, gridlines
-and date labels. Leave at FALSE for theme_minimal, no gridlines and rotated
+\item{overwrite_theme}{set to FALSE if you want to amend the final plot
+afterwards, in which case it returns the default ggplot2 theme, gridlines
+and date labels. Leave at TRUE for theme_minimal, no gridlines and rotated
 date labels.}
 
 \item{...}{further arguments passed on to function}
 }
 \value{
-data.table of all runs, by group, that meet the criteria
+(faceted) plot plus detailed data.tables showing improvement data.
+These outputs can be used for further processing in external tools
 }
 \description{
 Finds all runs of desired  length occurring on desired side of centre line.

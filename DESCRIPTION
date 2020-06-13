@@ -6,7 +6,7 @@ Authors@R:
            family = "MacKintosh",
            role = c("aut", "cre"),
            email = "johnmackintosh.jm@gmail.com")
-Description: Plots multiple run charts, finds successive signals of improvement, 
+Description: Plots multiple control charts, finds signals of improvement, 
     and revises centre line and control limits each time a signal is present.
 License: GPL-3
 Encoding: UTF-8
