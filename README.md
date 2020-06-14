@@ -44,3 +44,8 @@ library(spccharter)
 spccharter(data, numerator = counts, datecol = date, 
            grpvar = category_1, plot_type = 'c', direction = "both")
 ```
+
+![scpcharter_cchart](https://user-images.githubusercontent.com/3278367/84581574-812e6a80-adda-11ea-9586-8e7b1b757084.png)
+
+![spccharter_pchart](https://user-images.githubusercontent.com/3278367/84581576-85f31e80-adda-11ea-8feb-c8cb900545ad.png)
+
