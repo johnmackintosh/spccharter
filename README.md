@@ -16,7 +16,9 @@ status](https://ci.appveyor.com/api/projects/status/github/johnmackintosh/spccha
 The goal of spccharter is rapid analysis of multiple statistical process
 control charts. The package will create, detect signals of improvement,
 and revise control limits. Currently, ‘C’, ‘P’ and ‘U’ charts can be
-produced.
+produced. 
+
+The package supports tidy evaluation - you can pass bare variable names.
 
 ## Installation
 
@@ -44,8 +46,10 @@ library(spccharter)
 spccharter(data, numerator = counts, datecol = date, 
            grpvar = category_1, plot_type = 'c', direction = "both")
 ```
+![facet-spccharter](https://user-images.githubusercontent.com/3278367/84841170-7a516300-b039-11ea-90fb-9a373ac8bc26.PNG)
 
-![scpcharter_cchart](https://user-images.githubusercontent.com/3278367/84581574-812e6a80-adda-11ea-9586-8e7b1b757084.png)
+![spc-c-chart](https://user-images.githubusercontent.com/3278367/84840888-b932e900-b038-11ea-87d0-2e32e99bcdd1.png)
 
-![spccharter_pchart](https://user-images.githubusercontent.com/3278367/84581576-85f31e80-adda-11ea-8feb-c8cb900545ad.png)
+![spc-pchart](https://user-images.githubusercontent.com/3278367/84840901-c3ed7e00-b038-11ea-9377-b7a564433af0.png)
+
 
