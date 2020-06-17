@@ -65,34 +65,34 @@
 #'
 #'
 spccharter <- function(df,
-                numerator,
-                denominator = NULL,
-                datecol = NULL,
-                grpvar = NULL,
-                plot_type = c("c","p","u"),
-                runlength = 8,
-                initial_rows = 25,
-                look_forward = 25,
-                direction = c("above","below","both"),
-                round_digits = 2,
-                multiplier = c(100,1000,10000),
-                facet_cols = NULL,
-                facet_scales = "fixed",
-                chart_title = NULL,
-                chart_subtitle = NULL,
-                chart_caption = NULL,
-                chart_breaks = NULL,
-                line_colr =  "#005EB8",
-                line_size = 1.1,
-                point_colr = "#005EB8",
-                point_size = 2.7,
-                centre_colr = "#06425AFF",
-                centre_line_size = 1.05,
-                highlight_fill = "#B50A2AFF", #"#E48C2AFF", #"#DB1884",
-                cl_fill = "grey80", #"#67B9E9FF", #"#86C2DAFF",
-                wl_fill = "grey90", #"#B7D9F2FF", #"#C0DDE1FF",
-                overwrite_theme = TRUE,
-                ...) {
+                       numerator,
+                       denominator = NULL,
+                       datecol = NULL,
+                       grpvar = NULL,
+                       plot_type = c("c","p","u"),
+                       runlength = 8,
+                       initial_rows = 25,
+                       look_forward = 25,
+                       direction = c("above","below","both"),
+                       round_digits = 2,
+                       multiplier = c(100,1000,10000),
+                       facet_cols = NULL,
+                       facet_scales = "fixed",
+                       chart_title = NULL,
+                       chart_subtitle = NULL,
+                       chart_caption = NULL,
+                       chart_breaks = NULL,
+                       line_colr =  "#005EB8",
+                       line_size = 1.1,
+                       point_colr = "#005EB8",
+                       point_size = 2.7,
+                       centre_colr = "#06425AFF",
+                       centre_line_size = 1.05,
+                       highlight_fill = "#B50A2AFF", #"#E48C2AFF", #"#DB1884",
+                       cl_fill = "grey80", #"#67B9E9FF", #"#86C2DAFF",
+                       wl_fill = "grey90", #"#B7D9F2FF", #"#C0DDE1FF",
+                       overwrite_theme = TRUE,
+                       ...) {
   
   # initialise some variables
   
@@ -102,7 +102,7 @@ spccharter <- function(df,
   .y <- flag <- rungroup <- ucl <- uwl <- lwl <- lcl <-  NULL
   med_lookup <- .extended <- cols_to_round <- extend_to <- extend_to2 <-  NULL
   
- # sdcols <- NULL
+  # sdcols <- NULL
   
   
   flag_reset <- if (direction == "below") {
@@ -406,6 +406,22 @@ spccharter <- function(df,
   data.table::setkey(sustained_rows,.grpvar,start_date,end_date)
   
   
+  masterDT[,join_date := .datecol]
+  centres[,join_date := .datecol]
+  centres_extract <- centres[,.SD, .SDcols = c('.grpvar','join_date','centre')]
+  
+  
+  keycols <- c('.grpvar','join_date')
+  
+  setkeyv(masterDT,keycols)
+  setkeyv(centres_extract,keycols)
+  
+  masterDT <- centres_extract[masterDT, roll = TRUE][]
+  
+  
+  
+  
+  
   if (factorcheck) {
     masterDT[,.grpvar := factor(.grpvar,levels = keeplevels,ordered = TRUE)]
     centres[,.grpvar := factor(.grpvar,levels = keeplevels,ordered = TRUE)]
@@ -413,6 +429,13 @@ spccharter <- function(df,
     highlights[,.grpvar := factor(.grpvar,levels = keeplevels,ordered = TRUE)]
   }
   
+  
+  masterDT <- update_intermediate_rows(masterDT,
+                                       .numerator = .numerator,
+                                       .denominator = .denominator,
+                                       round_digits = round_digits,
+                                       .grpvar = .grpvar,
+                                       plot_type = plot_type)
   
   
   # base plot
@@ -439,41 +462,41 @@ spccharter <- function(df,
   # control limits with geom ribbon
   
   spcchart <- spcchart +
-    ggplot2::geom_ribbon(data = centres,
+    ggplot2::geom_ribbon(data = masterDT,
                          aes(x = .datecol, ymin = lcl, ymax = ucl),
                          fill = cl_fill, colour =  centre_colr, size = centre_line_size)
   
   spcchart <- spcchart  +
-    ggplot2::geom_ribbon(data = centres,
+    ggplot2::geom_ribbon(data = masterDT,
                          aes(x = .datecol, ymin = lwl, ymax = uwl),
                          fill = wl_fill)
   
   
   
-  spcchart <- spcchart +
-    ggplot2::geom_ribbon(data = centre_rows,
-                         aes(x = .datecol, ymin = lcl, ymax = ucl),
-                         fill = cl_fill, colour =  centre_colr, size = centre_line_size)
-  
-  spcchart <- spcchart  +
-    ggplot2::geom_ribbon(data = centre_rows,
-                         aes(x = .datecol, ymin = lwl, ymax = uwl),
-                         fill = wl_fill)
-  #colour =  centre_colr, size = centre_line_size)
-  
-  
-  if (dim(sustained_rows)[1] > 0L) {
-    spcchart <- spcchart +
-      ggplot2::geom_ribbon(data = sustained_rows,
-                           aes(x = .datecol, ymin = lcl, ymax = ucl),
-                           fill = cl_fill, colour =  centre_colr, size = centre_line_size)
-    
-    spcchart <- spcchart  +
-      ggplot2::geom_ribbon(data = sustained_rows,
-                           aes(x = .datecol, ymin = lwl, ymax = uwl),
-                           fill = wl_fill)
-    #, colour =  centre_colr, size = centre_line_size)
-  }
+  # spcchart <- spcchart +
+  #   ggplot2::geom_ribbon(data = centre_rows,
+  #                        aes(x = .datecol, ymin = lcl, ymax = ucl),
+  #                        fill = cl_fill, colour =  centre_colr, size = centre_line_size)
+  #
+  # spcchart <- spcchart  +
+  #   ggplot2::geom_ribbon(data = centre_rows,
+  #                        aes(x = .datecol, ymin = lwl, ymax = uwl),
+  #                        fill = wl_fill)
+  # #colour =  centre_colr, size = centre_line_size)
+  #
+  #
+  # if (dim(sustained_rows)[1] > 0L) {
+  #   spcchart <- spcchart +
+  #     ggplot2::geom_ribbon(data = sustained_rows,
+  #                          aes(x = .datecol, ymin = lcl, ymax = ucl),
+  #                          fill = cl_fill, colour =  centre_colr, size = centre_line_size)
+  #
+  #   spcchart <- spcchart  +
+  #     ggplot2::geom_ribbon(data = sustained_rows,
+  #                          aes(x = .datecol, ymin = lwl, ymax = uwl),
+  #                          fill = wl_fill)
+  #   #, colour =  centre_colr, size = centre_line_size)
+  # }
   
   
   # plot  points for all groups
@@ -609,7 +632,7 @@ spccharter <- function(df,
   
   if (dim(sustained_rows)[1] > 0L) {
     results <- list( spcchart = spcchart,
-                    # centres = centres,
+                     # centres = centres,
                      centre_rows = return_centre,
                      sustained = return_sustained,
                      remaining = remaining)

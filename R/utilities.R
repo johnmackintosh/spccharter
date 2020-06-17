@@ -130,7 +130,8 @@ get_process_centres <- function(DT,
   }
   if (plot_type == "c") {
     
-    temp_pc_rows[,std_dev := sqrt(centre), by = .grpvar]
+    temp_pc_rows[,std_dev := sqrt(centre), by = .grpvar
+                 ][,std_dev := round(std_dev, round_digits + 1)][]
     
   } else if (plot_type == 'p') {
     
@@ -163,3 +164,42 @@ get_process_centres <- function(DT,
 
 
 
+update_intermediate_rows <- function(DT,
+                                     .numerator,
+                                     .denominator,
+                                     round_digits,
+                                     .grpvar,
+                                     plot_type) {
+  
+  # need to update these for plotting later
+  if (plot_type == "c") {
+    
+    DT[,std_dev := sqrt(centre), by = .grpvar
+       ][,std_dev := round(std_dev, round_digits + 1)][]
+    
+  } else if (plot_type == 'p') {
+    
+    DT[,std_dev := sqrt(centre * (1 - centre) / .denominator) , by = .grpvar
+       ][,std_dev := round(std_dev, round_digits + 1)][]
+    
+  } else {
+    
+    DT[,std_dev := sqrt(centre  /  .denominator), by = .grpvar
+       ][,std_dev := round(std_dev, round_digits + 1)][]
+  }
+  
+  
+  DT[,`:=`(ucl = round(centre + 3 * std_dev,round_digits + 1),
+           uwl = round(centre + 2 * std_dev,round_digits + 1),
+           lwl = round(centre - 2 * std_dev,round_digits + 1),
+           lcl = round(centre - 3 * std_dev,round_digits + 1))][]
+  
+  
+  
+  DT[,lcl := data.table::fifelse(lcl < 0, 0,lcl)][]
+  DT[,lwl := data.table::fifelse(lwl < 0, 0,lwl)][]
+  
+
+  
+  
+}

@@ -16,12 +16,14 @@ utils::globalVariables(c(
   'extend_to',
   'flag',          # basic_processing
   'grp',
+  'join_date',
   'keepgroup',     # basic_processing
   'lcl',
   'look_forward',
   'lwl',
   'result',
   'roll_centre',   # basic_processing
+  'round_digits',
   'run_type',
   'rungroup',      # basic_processing
   'start_date',
