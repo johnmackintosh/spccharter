@@ -9,7 +9,7 @@ spccharter(
   numerator,
   denominator = NULL,
   datecol = NULL,
-  grpvar = NULL,
+  by,
   plot_type = c("c", "p", "u"),
   runlength = 8,
   initial_rows = 25,
@@ -31,7 +31,9 @@ spccharter(
   centre_line_size = 1.05,
   highlight_fill = "#B50A2AFF",
   cl_fill = "grey80",
+  cl_colr = NULL,
   wl_fill = "grey90",
+  wl_colr = NULL,
   overwrite_theme = TRUE,
   ...
 )
@@ -45,7 +47,8 @@ spccharter(
 
 \item{datecol}{name of date column}
 
-\item{grpvar}{character vector of grouping variable}
+\item{by}{a single unquoted  variable or character vector oflength 2
+indicating desired grouping variable(s) . You must supply a grouping variable .}
 
 \item{plot_type}{'c', 'p' or 'u' chart}
 
@@ -89,7 +92,11 @@ spccharter(
 
 \item{cl_fill}{geom_ribbon fill for upper  and lower control limits}
 
+\item{cl_colr}{optional line colour for upper and lower control limits}
+
 \item{wl_fill}{geom_ribbon fill for upper  and lower warning limits}
+
+\item{wl_colr}{optional line colour for upper and lower warning limits}
 
 \item{overwrite_theme}{set to FALSE if you want to amend the final plot
 afterwards, in which case it returns the default ggplot2 theme, gridlines
