@@ -1,31 +1,34 @@
 utils::globalVariables(c(
-  '.',             # basic_processing
+  '.',
   '.datecol',
-  '.denominator',  # basic_processing
-  '.grpvar',       # basic_processing
-  '.numerator',    # basic_processing
-  '.y',            # basic_processing
+  '.denominator',
+  '.grpvar',
+  '.numerator',
+  '.y',
   'N',
-  'centre',        # basic_processing
+  'centre',
   'compar',
   'cols_to_round',
-  'cusum',         # basic_processing
-  'cusum_shift',   # basic_processing
+  'cusum',
+  'cusum_shift',
   'direction',
   'end_date',
   'extend_to',
-  'flag',          # basic_processing
+  '.facet1',
+  '.facet2',
+  '.fac_grp',
+  'flag',
+  'geom_ribbon',
   'grp',
   'join_date',
-  'keepgroup',     # basic_processing
+  'keepgroup',
   'lcl',
-  'look_forward',
   'lwl',
   'result',
-  'roll_centre',   # basic_processing
+  'roll_centre',
   'round_digits',
   'run_type',
-  'rungroup',      # basic_processing
+  'rungroup',
   'start_date',
   'std_dev',
   'ucl',
