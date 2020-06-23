@@ -18,7 +18,7 @@ control charts. The package will create, detect signals of improvement,
 and revise control limits. Currently, ‘C’, ‘P’ and ‘U’ charts can be
 produced. 
 
-The package supports tidy evaluation - you can pass bare variable names.
+The package supports non standard evaluation - you can pass bare variable names.
 
 ## Installation
 
@@ -50,7 +50,7 @@ spccharter(data, numerator = counts, datecol = date,
            by = category_1, plot_type = 'c', direction = "both")
 ```
 
-Two grouping variables
+Two grouping variables:
 
 ``` r
 library(spccharter)
