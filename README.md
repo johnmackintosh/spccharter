@@ -33,19 +33,33 @@ But the development version is available on
 [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("johnmackintosh/spccharter")
+# install.packages("remotes") # if not already installed
+remotes::install_github("johnmackintosh/spccharter")
 ```
+
+
 
 ## Example
 
 To follow:
 
+One grouping variable:
 ``` r
 library(spccharter)
 spccharter(data, numerator = counts, datecol = date, 
-           grpvar = category_1, plot_type = 'c', direction = "both")
+           by = category_1, plot_type = 'c', direction = "both")
 ```
+
+Two grouping variables
+
+``` r
+library(spccharter)
+spccharter(data, numerator = counts, datecol = date, 
+           by = c('ward','hospital'), plot_type = 'p', direction = "both")
+```
+
+## Example plots
+
 ![facet-spccharter](https://user-images.githubusercontent.com/3278367/84841170-7a516300-b039-11ea-90fb-9a373ac8bc26.PNG)
 
 ![spc-c-chart](https://user-images.githubusercontent.com/3278367/84840888-b932e900-b038-11ea-87d0-2e32e99bcdd1.png)
