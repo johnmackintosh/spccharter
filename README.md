@@ -14,11 +14,18 @@ status](https://ci.appveyor.com/api/projects/status/github/johnmackintosh/spccha
 <!-- badges: end -->
 
 The goal of spccharter is rapid analysis of multiple statistical process
-control charts. The package will create, detect signals of improvement,
-and revise control limits. Currently, ‘C’, ‘P’ and ‘U’ charts can be
-produced. 
+control charts.  
+The package will create, detect signals of improvement,and revise control limits.  
+Currently, ‘C’, ‘P’ and ‘U’ charts can be produced.  
 
-The package supports non standard evaluation - you can pass bare variable names.
+The package supports non standard evaluation - you can pass bare variable names.  
+
+The code is currently best described as..  
+
+![terrible](https://media.giphy.com/media/T6QOv7Vw24IU0/giphy.gif)  
+
+But it will be improved shortly
+
 
 ## Installation
 
