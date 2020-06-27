@@ -29,14 +29,9 @@ But it will be improved shortly
 
 ## Installation
 
-You cannot install the released version of spccharter from
-[CRAN](https://CRAN.R-project.org) with:
+spccharter is not on [CRAN](https://CRAN.R-project.org) yet
 
-``` r
-install.packages("spccharter")
-```
-
-But the development version is available on
+*But* the development version is available on
 [GitHub](https://github.com/) with:
 
 ``` r
@@ -47,8 +42,6 @@ remotes::install_github("johnmackintosh/spccharter")
 
 
 ## Example
-
-To follow:
 
 One grouping variable:
 ``` r
