@@ -20,12 +20,6 @@ Currently, ‘C’, ‘P’ and ‘U’ charts can be produced.
 
 The package supports non standard evaluation - you can pass bare variable names.  
 
-The code is currently best described as..  
-
-![terrible](https://media.giphy.com/media/T6QOv7Vw24IU0/giphy.gif)  
-
-But it will be improved shortly
-
 
 ## Installation
 
