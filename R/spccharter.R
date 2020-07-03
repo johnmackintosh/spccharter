@@ -142,7 +142,7 @@ spccharter <- function(df,
   stopifnot(!is.null(numerator),
             !is.null(datecol),
             !is.null(df),
-            #!is.null(grpvar),
+            !is.null(by),
             length(direction) == 1
   )
 
@@ -184,7 +184,7 @@ spccharter <- function(df,
   if (plot_type == 'c') {
     masterDT[,.denominator := 1L]
   } else if (!is.null(denominator)) {
-    masterDT[, .denominator := as.numeric(get(denominator))]
+    masterDT[, .denominator := as.numeric(get(..denominator))]
   }
 
 
