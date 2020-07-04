@@ -103,6 +103,7 @@ spccharter <- function(df,
   start_date <- end_date  <-  NULL
   keepgroup <- NULL
   .numerator <- .denominator <- .datecol <- NULL
+  ..numerator <- ..denominator <- ..datecol <- NULL
   .y <- flag <- rungroup <- ucl <- uwl <- lwl <- lcl <-  NULL
   med_lookup <- .extended <- cols_to_round <- extend_to <- extend_to2 <-  NULL
 
@@ -132,11 +133,6 @@ spccharter <- function(df,
     by <- by[which(by != 'c')]
   }
 
-
-
-
-
-  #grpvar <-  deparse(substitute(grpvar))
 
 
   stopifnot(!is.null(numerator),
