@@ -46,7 +46,7 @@ spccharter(data, numerator = counts, datecol = date,
 
 Two grouping variables:
 
-You might need to experiement with the order of the variables.  
+You might need to experiment with the order of the variables.  
 Usually, passing the lowest level (e.g. Ward, then Hospital) works best.  
 
 If results are not as expected, either paste 2 variables together and try passing as a single group, or raise an issue with reprex.
