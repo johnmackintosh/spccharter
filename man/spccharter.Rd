@@ -35,6 +35,7 @@ spccharter(
   wl_fill = "grey90",
   wl_colr = NULL,
   overwrite_theme = TRUE,
+  outputs = c("both", "plot", "data"),
   ...
 )
 }
@@ -102,6 +103,8 @@ indicating desired grouping variable(s) . You must supply a grouping variable .}
 afterwards, in which case it returns the default ggplot2 theme, gridlines
 and date labels. Leave at TRUE for theme_minimal, no gridlines and rotated
 date labels.}
+
+\item{outputs}{return both plot and data, plot only, data only}
 
 \item{...}{further arguments passed on to function}
 }
