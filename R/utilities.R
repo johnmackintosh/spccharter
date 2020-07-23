@@ -7,13 +7,13 @@ basic_processing <- function(DT = NULL,
   lookback <- (runlength - 1L)
   DT[,.y := .numerator / .denominator,]
   DT[,flag := sign(.y - centre), by]
-  DT[flag != 0, rungroup := rleidv(flag)][flag != 0, cusum := cumsum(flag), by = rungroup
-                                          ][flag != 0, cusum_shift := shift(cusum,fill = cusum[.N], n = lookback, type = "lead"), by = list(rungroup)
-                                            ][flag != 0, roll_centre := zoo::rollapply(.y, width = look_forward,
-                                                                                       FUN = mean,
-                                                                                       partial = TRUE,
-                                                                                       align = "right"),
-                                              by = list(rungroup)]
+  DT[flag != 0, rungroup := rleidv(flag),.fac_grp][]
+  DT[flag != 0, cusum := cumsum(flag), by = list(.fac_grp,rungroup)]
+  DT[flag != 0, cusum_shift := shift(cusum,fill = cusum[.N], n = lookback, type = "lead"), by = list(.fac_grp,rungroup)]
+  DT[flag != 0, roll_centre := zoo::rollapply(.y, width = look_forward,
+                                              FUN = mean,
+                                              partial = TRUE,
+                                              align = "right"),by = list(.fac_grp, rungroup)]
   
 }
 
@@ -76,7 +76,7 @@ get_sustained <- function(DT1 = NULL,
 
 #first pass
 update_tempDT <- function(DT1 = NULL, # sustained
-                          DT2 = NULL, # masterDT
+                          DT2 = NULL, # .originalDT
                           by = by) {
   res <- DT1[DT2, on = by][.datecol >= start_date,.SD, by = by][]
   res
@@ -133,6 +133,12 @@ get_process_centres <- function(DT,
   temp_pc_rows[,lcl := data.table::fifelse(lcl < 0, 0,lcl)]
   temp_pc_rows[,lwl := data.table::fifelse(lwl < 0, 0,lwl)]
   
+  if (plot_type == 'p') {
+  temp_pc_rows[,ucl := data.table::fifelse(lcl > 1, 1, ucl)]
+  temp_pc_rows[,uwl := data.table::fifelse(lwl > 1, 1, lwl)][]
+  }
+  
+  
   temp_pc_rows[,`:=`(start_date = min(.datecol, na.rm = TRUE),
                      end_date = max(.datecol,na.rm = TRUE)), by = by]
   
@@ -177,5 +183,11 @@ update_intermediate_rows <- function(DT,
   DT[,lcl := data.table::fifelse(lcl < 0, 0,lcl)][]
   DT[,lwl := data.table::fifelse(lwl < 0, 0,lwl)][]
   
+  if (plot_type == 'p') {
+    DT[,ucl := data.table::fifelse(lcl > 1, 1, ucl)]
+    DT[,uwl := data.table::fifelse(lwl > 1, 1, lwl)][]
+  }
+  
+ 
   
 }

@@ -153,27 +153,27 @@ spccharter <- function(df,
   
   
   
-  masterDT <- data.table::copy(df)
-  data.table::setDT(masterDT)
+  .originalDT <- data.table::copy(df)
+  data.table::setDT(.originalDT)
   
   
-  masterDT[,`:=`(.numerator = as.numeric(get(..numerator)), .datecol = get(..datecol))][]
+  .originalDT[,`:=`(.numerator = as.numeric(get(..numerator)), .datecol = get(..datecol))][]
   
   
   if (!is.null(by) & length(by) < 2) {
-    masterDT[,.facet1 := get(by)]
-    masterDT[,.fac_grp := get(by)][]
+    .originalDT[,.facet1 := get(by)]
+    .originalDT[,.fac_grp := get(by)][]
   }
   
   if (!is.null(by) & length(by) >= 2) {
-    masterDT[,.facet1 := get(by[1])]
-    masterDT[,.facet2 := get(by[2])]
-    masterDT[,.fac_grp := paste(.facet1,.facet2,sep = '_')][]
+    .originalDT[,.facet1 := get(by[1])]
+    .originalDT[,.facet2 := get(by[2])]
+    .originalDT[,.fac_grp := paste(.facet1,.facet2,sep = '_')][]
   }
   
   
   # is grpvar a factor
-  factorcheck <- lapply(Filter(is.factor,masterDT), levels)
+  factorcheck <- lapply(Filter(is.factor,.originalDT), levels)
   
   if (length(factorcheck)) {
     keeplevels <- levels(by)
@@ -181,9 +181,9 @@ spccharter <- function(df,
   
   
   if (plot_type == 'c') {
-    masterDT[,.denominator := 1L]
+    .originalDT[,.denominator := 1L]
   } else if (!is.null(denominator)) {
-    masterDT[, .denominator := as.numeric(get(..denominator))]
+    .originalDT[, .denominator := as.numeric(get(..denominator))]
   }
   
   
@@ -192,11 +192,11 @@ spccharter <- function(df,
   keycols_temp <- by
   keycols <- c(keycols_temp,'.datecol')
   
-  data.table::setkeyv(masterDT, keycols)
+  data.table::setkeyv(.originalDT, keycols)
   
-  masterDT <- masterDT[!is.na(.datecol),]
+  .originalDT <- .originalDT[!is.na(.datecol),]
   
-  keepgroup <- masterDT[,.N, by = by]
+  keepgroup <- .originalDT[,.N, by = by]
   
   lines_only <- keepgroup[N > 1,]
   lines_only <- unique(lines_only[[1]])
@@ -212,7 +212,7 @@ spccharter <- function(df,
         Please check the values of the initial_rows and runlength arguments.
         Currently they exceed the number of rows for each group")
   } else {
-    keepgroup <-  masterDT[,.N, by
+    keepgroup <-  .originalDT[,.N, by
                            ][N >= (initial_rows + runlength),.SD, .SDcols = "N", by]}
   
   if (all(keepgroup$N) == 0) {
@@ -222,7 +222,7 @@ spccharter <- function(df,
   }
   
   
-  process_centre_rows <- masterDT[, utils::head(.SD, initial_rows),  by = by]
+  process_centre_rows <- .originalDT[, utils::head(.SD, initial_rows),  by = by]
   
   if (plot_type == "c") {
     process_centre_rows[,centre := mean(.numerator,na.rm = TRUE), by = by]
@@ -270,7 +270,7 @@ spccharter <- function(df,
   
   
   
-  tempDT <- med_lookup[masterDT, on = by, mult = 'first'][.datecol > end_date,.SD, by = by][]
+  tempDT <- med_lookup[.originalDT, on = by, mult = 'first'][.datecol > end_date,.SD, by = by][]
   
   
   
@@ -298,8 +298,8 @@ spccharter <- function(df,
                                DT2 = run_end, by = by)
     
     setkeyv(sustained,keycols_temp)
-    setkeyv(masterDT,keycols_temp)
-    tempDT <- update_tempDT(sustained,masterDT)
+    setkeyv(.originalDT,keycols_temp)
+    tempDT <- update_tempDT(sustained,.originalDT)
     
     
     
@@ -323,8 +323,8 @@ spccharter <- function(df,
     
     med_lookup <-  sustained[,.SD, .SDcols = c('centre','end_date'), by]
     
-    data.table::setkeyv(masterDT, keycols)
-    tempDT <- med_lookup[masterDT, on = keycols_temp, mult = 'last'][.datecol > end_date,][]
+    data.table::setkeyv(.originalDT, keycols)
+    tempDT <- med_lookup[.originalDT, on = keycols_temp, mult = 'last'][.datecol > end_date,][]
     
     tempDT <- tempDT[,end_date := NULL][]
     
@@ -353,9 +353,9 @@ spccharter <- function(df,
       sustained[,`:=`(run_type = 'sustained',rungroup = 1)][]
       
       setkeyv(sustained,keycols_temp)
-      setkeyv(masterDT,keycols_temp)
+      setkeyv(.originalDT,keycols_temp)
       
-      tempDT <- update_tempDT(sustained,masterDT)
+      tempDT <- update_tempDT(sustained,.originalDT)
       
       if (!length(keepgroup)) {break}
       temp_centres <- get_process_centres(tempDT, look_forward, numerator,
@@ -375,8 +375,8 @@ spccharter <- function(df,
       
       med_lookup <-  sustained[,.SD, .SDcols = c('centre','end_date'), by]
       
-      data.table::setkeyv(masterDT, keycols)
-      tempDT <- med_lookup[masterDT, on = keycols_temp, mult = 'last'][.datecol > end_date,][]
+      data.table::setkeyv(.originalDT, keycols)
+      tempDT <- med_lookup[.originalDT, on = keycols_temp, mult = 'last'][.datecol > end_date,][]
       
       tempDT <- tempDT[,end_date := NULL][]
       
@@ -387,7 +387,7 @@ spccharter <- function(df,
   
   centres[,extend_to := shift(start_date,type = "lead"), by = by]
   centres[,extend_to := ifelse(is.na(extend_to),
-                               max(masterDT[[".datecol"]]),extend_to), by = by]
+                               max(.originalDT[[".datecol"]]),extend_to), by = by]
   centre_rows <- centres[!is.na(end_date) & run_type == "baseline",]
   
   sustained_rows <- centres[!is.na(end_date) & run_type == "sustained",][]
@@ -412,8 +412,8 @@ spccharter <- function(df,
   
   med_lookup <-  centres[,.SD, .SDcols = c('centre','end_date'), by]
   
-  data.table::setkeyv(masterDT, keycols)
-  .extended <- med_lookup[masterDT, on = keycols_temp,mult = 'last'][.datecol > end_date,][]
+  data.table::setkeyv(.originalDT, keycols)
+  .extended <- med_lookup[.originalDT, on = keycols_temp,mult = 'last'][.datecol > end_date,][]
   
   if (dim(.extended)[1] > 0) {
     
@@ -461,7 +461,7 @@ spccharter <- function(df,
   data.table::setkeyv(sustained_rows,susrowkeycols)
   
   
-  masterDT[,join_date := .datecol]
+  .originalDT[,join_date := .datecol]
   centres[,join_date := .datecol]
   centres <- centres[centres[, .I[start_date == max(start_date)], by = c('.datecol', keycols_temp)]$V1]
   centres[,rungroup := .GRP, by = c('.fac_grp','start_date','end_date','centre')][]
@@ -471,24 +471,24 @@ spccharter <- function(df,
   
   keycols <- c(keycols_temp,'join_date')
   
-  setkeyv(masterDT,keycols)
+  setkeyv(.originalDT,keycols)
   setkeyv(centres_extract,keycols)
   
-  masterDT <- centres_extract[masterDT, roll = TRUE][]
+  .originalDT <- centres_extract[.originalDT, roll = TRUE][]
   
   
   
   
   #  omit the factor level replacement for now
   #   if (length(factorcheck)) {
-  #     masterDT[,by := factor(by,levels = keeplevels,ordered = TRUE)]
+  #     .originalDT[,by := factor(by,levels = keeplevels,ordered = TRUE)]
   #     centres[,by := factor(by,levels = keeplevels,ordered = TRUE)]
   #     sustained_rows[,by := factor(by,levels = keeplevels,ordered = TRUE)]
   #     highlights[,by := factor(by,levels = keeplevels,ordered = TRUE)]
   #   }
   
   
-  masterDT <- update_intermediate_rows(masterDT,
+  .originalDT <- update_intermediate_rows(.originalDT,
                                        .numerator = .numerator,
                                        .denominator = .denominator,
                                        round_digits = round_digits,
@@ -496,14 +496,14 @@ spccharter <- function(df,
                                        plot_type = plot_type)
   
   
-  masterDT[, .y := signif(.numerator/.denominator,round_digits + 1)]
+  .originalDT[, .y := signif(.numerator/.denominator,round_digits + 1)]
   
   
   if (.outputs != 'data') {
     
     # base plot
     
-    spcchart <- ggplot2::ggplot(masterDT,
+    spcchart <- ggplot2::ggplot(.originalDT,
                                 ggplot2::aes(x = .datecol,
                                              y = .y,
                                              group = .fac_grp))
@@ -530,7 +530,7 @@ spccharter <- function(df,
     
     if (!is.null(cl_colr)) {
       spcchart <- spcchart +
-        ggplot2::geom_ribbon(data = masterDT,
+        ggplot2::geom_ribbon(data = .originalDT,
                              aes(x = .datecol,
                                  ymin = lcl, ymax = ucl),
                              fill = cl_fill,
@@ -539,7 +539,7 @@ spccharter <- function(df,
     } else {
       
       spcchart <- spcchart +
-        ggplot2::geom_ribbon(data = masterDT,
+        ggplot2::geom_ribbon(data = .originalDT,
                              aes(x = .datecol,
                                  ymin = lcl, ymax = ucl),
                              fill = cl_fill, size = centre_line_size)
@@ -549,7 +549,7 @@ spccharter <- function(df,
       
       
       spcchart <- spcchart  +
-        ggplot2::geom_ribbon(data = masterDT,
+        ggplot2::geom_ribbon(data = .originalDT,
                              aes(x = .datecol, ymin = lwl, ymax = uwl),
                              fill = wl_fill,
                              colour =  wl_colr,
@@ -557,7 +557,7 @@ spccharter <- function(df,
     } else {
       
       spcchart <- spcchart  +
-        ggplot2::geom_ribbon(data = masterDT,
+        ggplot2::geom_ribbon(data = .originalDT,
                              aes(x = .datecol, ymin = lwl, ymax = uwl),
                              fill = wl_fill,
                              size = centre_line_size)
@@ -587,7 +587,7 @@ spccharter <- function(df,
     
     # lines only
     
-    lines_only <- masterDT[.N > 1, .SD, by = by]
+    lines_only <- .originalDT[.N > 1, .SD, by = by]
     lines_only[,.y := signif(.numerator/.denominator,round_digits + 1)]
     
     
