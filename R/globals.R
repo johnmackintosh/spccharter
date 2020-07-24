@@ -31,6 +31,7 @@ utils::globalVariables(c(
   'rungroup',
   'start_date',
   'std_dev',
+  'sus_obs',
   'ucl',
   'uwl'
 ))

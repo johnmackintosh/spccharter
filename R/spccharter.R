@@ -392,21 +392,24 @@ spccharter <- function(df,
   
   sustained_rows <- centres[!is.na(end_date) & run_type == "sustained",][]
   
-  sustained_rows <- setDT(sustained_rows)[ ,.SD[which.max(start_date)],by = keycols][]
+  sus_obs <-  dim(sustained_rows)[1]
   
+  if (sus_obs > 0L) {
+  sustained_rows <- setDT(sustained_rows)[ ,.SD[which.max(start_date)],by = keycols][]
   sustained_rows[order(c(keycols_temp,'start_date'))]
   sustained_rows[,rungroup := NULL]
   sustained_rows[,rungroup := .GRP, by = c(keycols_temp,'start_date')][]
   sustained_rows <- sustained_rows[sustained_rows[, .I[start_date == max(start_date)], by = c('.datecol', keycols_temp)]$V1]
-  
+  }
   
   centres[order(.datecol),rungroup := .GRP, by = c(keycols_temp, .datecol, start_date)][]
   
   centres <- centres[centres[, .I[start_date == max(start_date)], by = c('.datecol', keycols_temp)]$V1]
   
+  if (sus_obs > 0L) {
   
   highlights <-  sustained_rows[, utils::head(.SD, runlength),  by = c(keycols_temp, 'rungroup')]
-  
+  }
   
   # now we need to extend from the last improvement to the end of the data
   
@@ -488,15 +491,41 @@ spccharter <- function(df,
   #   }
   
   
-  .originalDT <- update_intermediate_rows(.originalDT,
-                                       .numerator = .numerator,
-                                       .denominator = .denominator,
-                                       round_digits = round_digits,
-                                       by = by,
-                                       plot_type = plot_type)
+  if (plot_type == "c") {
+    
+    .originalDT[,std_dev := sqrt(centre), by = by
+       ][,std_dev := signif(std_dev, round_digits + 2)][]
+    
+  } else if (plot_type == 'p') {
+    
+    .originalDT[,std_dev := sqrt(centre * (1 - centre) / .denominator) , by = by
+       ][,std_dev := signif(std_dev, round_digits + 2)][]
+    
+  } else {
+    
+    .originalDT[,std_dev := sqrt(centre  /  .denominator), by = by
+       ][,std_dev := signif(std_dev, round_digits + 2)][]
+  }
   
   
-  .originalDT[, .y := signif(.numerator/.denominator,round_digits + 1)]
+  .originalDT[,`:=`(ucl = signif(centre + 3 * std_dev,round_digits + 2),
+           uwl = signif(centre + 2 * std_dev,round_digits + 2),
+           lwl = signif(centre - 2 * std_dev,round_digits + 2),
+           lcl = signif(centre - 3 * std_dev,round_digits + 2))][]
+  
+  
+  
+  .originalDT[,lcl := data.table::fifelse(lcl < 0, 0,lcl)][]
+  .originalDT[,lwl := data.table::fifelse(lwl < 0, 0,lwl)][]
+  
+  if (plot_type == 'p') {
+    .originalDT[,ucl := data.table::fifelse(lcl > 1, 1, ucl)]
+    .originalDT[,uwl := data.table::fifelse(lwl > 1, 1, lwl)][]
+  }
+  
+  
+  .originalDT[, .y := (.numerator/.denominator)][]
+  .originalDT[, .y := signif(.y,round_digits + 1)]
   
   
   if (.outputs != 'data') {
@@ -615,7 +644,7 @@ spccharter <- function(df,
     
     
     #  highlight sustained points
-    if (dim(highlights)[1] > 0L) {
+    if (sus_obs > 0L) {
       
       spcchart <- spcchart +
         ggplot2::geom_point(data = highlights,
@@ -630,7 +659,7 @@ spccharter <- function(df,
     }
     
     # sustained mean  lines
-    if (dim(sustained_rows)[1] > 0L) {
+    if (sus_obs > 0L) {
       spcchart <- spcchart +
         ggplot2::geom_segment(data = sustained_rows, na.rm = TRUE,
                               ggplot2::aes(x = start_date, xend = end_date,
@@ -683,7 +712,7 @@ spccharter <- function(df,
     return_centre <- copy(centre_rows)
     return_centre[,`:=`(.numerator = NULL, .denominator = NULL, .datecol = NULL)][]
     
-    if (dim(sustained_rows)[1] > 0L) {
+    if (sus_obs > 0L) {
       return_sustained <- copy(sustained_rows)
       return_sustained[,`:=`(.numerator = NULL, .denominator = NULL, .datecol = NULL)][]
       
