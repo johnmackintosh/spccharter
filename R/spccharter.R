@@ -64,6 +64,21 @@
 #' @importFrom scales label_percent
 #' @export
 #'
+#'@examples
+#'\donttest{
+#'spccharter(testdata, numerator = defects, 
+#'denominator = possible, datecol =  report_month,
+#' by = testgroup, plot_type = 'p', 
+#' direction = 'both', initial_rows = 13, 
+#' look_forward = 13, chart_breaks = '3 months')
+#' 
+#' spccharter(testdata, numerator = defects, 
+#'denominator = possible, datecol =  report_month,
+#' by = testgroup, plot_type = 'c', 
+#' direction = 'both', initial_rows = 13, 
+#' look_forward = 13, chart_breaks = '3 months')
+#' 
+#' }
 #'
 #'
 #'
@@ -517,10 +532,10 @@ spccharter <- function(df,
   
   .originalDT[,lcl := data.table::fifelse(lcl < 0, 0,lcl)][]
   .originalDT[,lwl := data.table::fifelse(lwl < 0, 0,lwl)][]
-  
+
   if (plot_type == 'p') {
     .originalDT[,ucl := data.table::fifelse(lcl > 1, 1, ucl)]
-    .originalDT[,uwl := data.table::fifelse(lwl > 1, 1, lwl)][]
+    .originalDT[,uwl := data.table::fifelse(lwl > 1, 1, uwl)][]
   }
   
   

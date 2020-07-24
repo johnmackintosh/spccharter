@@ -123,3 +123,22 @@ The rebasing uses the points in the run, and a number of future points to ensure
 Facets and axis limits are handled by ggplot, though x-axis breaks can be
 specified using the appropriate character string e.g. "3 months"
 }
+\examples{
+\donttest{
+spccharter(testdata, numerator = defects, 
+denominator = possible, datecol =  report_month,
+by = testgroup, plot_type = 'p', 
+direction = 'both', initial_rows = 13, 
+look_forward = 13, chart_breaks = '3 months')
+
+spccharter(testdata, numerator = defects, 
+denominator = possible, datecol =  report_month,
+by = testgroup, plot_type = 'c', 
+direction = 'both', initial_rows = 13, 
+look_forward = 13, chart_breaks = '3 months')
+
+}
+
+
+
+}
