@@ -534,8 +534,8 @@ spccharter <- function(df,
   .originalDT[,lwl := data.table::fifelse(lwl < 0, 0,lwl)][]
 
   if (plot_type == 'p') {
-    .originalDT[,ucl := data.table::fifelse(lcl > 1, 1, ucl)]
-    .originalDT[,uwl := data.table::fifelse(lwl > 1, 1, uwl)][]
+    .originalDT[,ucl := data.table::fifelse(ucl > 1, 1, ucl)]
+    .originalDT[,uwl := data.table::fifelse(uwl > 1, 1, uwl)][]
   }
   
   
