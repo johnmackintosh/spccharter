@@ -47,8 +47,7 @@ spccharter(data, numerator = counts, datecol = date,
 
 Two grouping variables:
 
-You might need to experiment with the order of the variables. Usually,
-passing the lowest level (e.g. Ward, then Hospital) works best.
+Pass in a character vector
 
 ``` r
 library(spccharter)
