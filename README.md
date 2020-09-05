@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# spccharter
+# spccharter <img src="man/figures/logo.jpg" width="160px" align="right" />
 
 <!-- badges: start -->
 
@@ -13,6 +13,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 status](https://ci.appveyor.com/api/projects/status/github/johnmackintosh/spccharter?branch=master&svg=true)](https://ci.appveyor.com/project/johnmackintosh/spccharter)
 [![R build
 status](https://github.com/johnmackintosh/spccharter/workflows/R-CMD-check/badge.svg)](https://github.com/johnmackintosh/spccharter/actions)
+
 <!-- badges: end -->
 
 The goal of spccharter is rapid analysis of multiple statistical process
@@ -47,7 +48,8 @@ spccharter(data, numerator = counts, datecol = date,
 
 Two grouping variables:
 
-Pass in a character vector
+You might need to experiment with the order of the variables. Usually,
+passing the lowest level (e.g. Ward, then Hospital) works best.
 
 ``` r
 library(spccharter)
