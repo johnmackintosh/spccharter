@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# spccharter <img src="man/figures/logo.jpg" width="160px" align="right" />
+# spccharter <img src="man/figures/logo.png" width="160px" align="right" />
 
 <!-- badges: start -->
 
