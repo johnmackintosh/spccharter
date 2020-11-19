@@ -7,8 +7,9 @@
 
 [![Travis build
 status](https://travis-ci.com/johnmackintosh/spccharter.svg?branch=master)](https://travis-ci.com/johnmackintosh/spccharter)
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![Project Status: Active – The project has reached a stable, usable
+state and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/johnmackintosh/spccharter?branch=master&svg=true)](https://ci.appveyor.com/project/johnmackintosh/spccharter)
 [![R build
