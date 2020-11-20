@@ -14,6 +14,7 @@ developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.re
 status](https://ci.appveyor.com/api/projects/status/github/johnmackintosh/spccharter?branch=master&svg=true)](https://ci.appveyor.com/project/johnmackintosh/spccharter)
 [![R build
 status](https://github.com/johnmackintosh/spccharter/workflows/R-CMD-check/badge.svg)](https://github.com/johnmackintosh/spccharter/actions)
+![R-CMD-check](https://github.com/johnmackintosh/spccharter/workflows/R-CMD-check/badge.svg)
 
 <!-- badges: end -->
 
