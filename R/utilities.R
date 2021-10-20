@@ -24,6 +24,7 @@ get_run_dates <- function(direct = direction,
                           target_vec = c("cusum_shift","cusum"),
                           compar_vec = flag_reset,
                           runlength = runlength,
+                          by = by,
                           ...) {
   flag_reset <- if (direct == "below") {
     runlength * -1
