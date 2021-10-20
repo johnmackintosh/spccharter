@@ -298,7 +298,7 @@ spccharter <- function(df,
   tempDT <- basic_processing(DT = tempDT, kg = keepgroup,runlength, look_forward, by = by)
   tempDT[,roll_centre := signif(roll_centre,round_digits + 2)][]
   run_start <- get_run_dates(direction,DT = tempDT, target_vec = "cusum_shift",
-                             compar_vec = flag_reset, runlength)
+                             compar_vec = flag_reset, runlength, by = by)
   
   keepgroup <- run_start[,.N,by]
   keepgroup <- unique(keepgroup[[1]])
@@ -306,7 +306,7 @@ spccharter <- function(df,
   if (length(keepgroup)) {
     
     run_end <- get_run_dates(direction,DT = tempDT, target_vec = "cusum",
-                             compar_vec = flag_reset, runlength)
+                             compar_vec = flag_reset, runlength, by = by)
     
     
     sustained <- get_sustained(DT1 = run_start,
@@ -357,12 +357,12 @@ spccharter <- function(df,
     while (length(keepgroup)) {
       tempDT <- basic_processing(DT = tempDT, kg = keepgroup, runlength, look_forward)
       run_start <- get_run_dates(direction, DT = tempDT, target_vec = "cusum_shift",
-                                 compar_vec = flag_reset, runlength)
+                                 compar_vec = flag_reset, runlength, by = by)
       keepgroup <- run_start[,.N,by]
       keepgroup <- keepgroup[N > 1,][,unique(keepgroup[[1]])]
       
       run_end <- get_run_dates(direction,DT = tempDT, target_vec = "cusum",
-                               compar_vec = flag_reset, runlength)
+                               compar_vec = flag_reset, runlength, by = by)
       
       sustained <- get_runs_DT(DT1 = run_start, DT2 = run_end, by)
       sustained[,`:=`(run_type = 'sustained',rungroup = 1)][]
