@@ -10,10 +10,8 @@ state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![AppVeyor build
 status](https://ci.appveyor.com/api/projects/status/github/johnmackintosh/spccharter?branch=master&svg=true)](https://ci.appveyor.com/project/johnmackintosh/spccharter)
-[![R build
-status](https://github.com/johnmackintosh/spccharter/workflows/R-CMD-check/badge.svg)](https://github.com/johnmackintosh/spccharter/actions)
-![R-CMD-check](https://github.com/johnmackintosh/spccharter/workflows/R-CMD-check/badge.svg)
 
+[![R-CMD-check](https://github.com/johnmackintosh/spccharter/workflows/R-CMD-check/badge.svg)](https://github.com/johnmackintosh/spccharter/actions)
 <!-- badges: end -->
 
 The goal of spccharter is rapid analysis of multiple statistical process
